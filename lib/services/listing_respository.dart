@@ -35,7 +35,7 @@ class ListingRepository {
           final listing = Listing.fromJson(item);
           parsedList.add(listing);
           // log("Parsed item $i OK");
-        } catch (e, st) {
+        } catch (e) {
           // log("Error parsing item $i: $e");
           // log(st.toString());
         }

@@ -116,30 +116,6 @@ class Listing {
   }
 }
 
-/// --------------------
-/// Enums
-/// --------------------
-
-// enum IdcPropertyType {
-//   commercialSale,
-//   condoTownhouse,
-//   land,
-//   multiFamily,
-//   singleFamily,
-// }
-
-/// --------------------
-/// Enum Helpers
-/// --------------------
-
-// final idcPropertyTypeValues = EnumValues({
-//   'Commercial Sale': IdcPropertyType.commercialSale,
-//   'Condo/Townhouse': IdcPropertyType.condoTownhouse,
-//   'Land': IdcPropertyType.land,
-//   'Multi-Family': IdcPropertyType.multiFamily,
-//   'Single Family': IdcPropertyType.singleFamily,
-// });
-
 class EnumValues<T> {
   final Map<String, T> map;
   late Map<T, String> reverseMap;

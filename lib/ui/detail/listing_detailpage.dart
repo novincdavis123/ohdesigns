@@ -1,10 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:ohdesigns/models/listing_model.dart';
 import 'package:ohdesigns/providers/listing_provider.dart';
 import 'package:ohdesigns/theme/app_colors.dart';
+import 'package:ohdesigns/utils/currency_formatter.dart';
 import 'package:ohdesigns/widgets/buildlisting_agentab.dart';
 import 'package:ohdesigns/widgets/details_tab.dart';
+import 'package:ohdesigns/widgets/property_details.dart';
 import 'package:provider/provider.dart';
 
 class ListingDetailPage extends StatelessWidget {
@@ -16,8 +18,14 @@ class ListingDetailPage extends StatelessWidget {
     return SafeArea(child: Scaffold(body: _body(context)));
   }
 
-  // Body with image gallery and details
   SingleChildScrollView _body(BuildContext context) {
+    // Reset current image index for this listing
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ListingProvider>(context, listen: false).resetImageIndex();
+    });
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletOrWeb = screenWidth > 600;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,16 +33,16 @@ class ListingDetailPage extends StatelessWidget {
           // --- Image Gallery ---
           Stack(
             children: [
-              _buildImageGallery(context),
+              _buildImageGallery(context, isTabletOrWeb),
               _buildBackButton(context),
-              _buildPropertyTypeLabel(),
+              _buildPropertyTypeLabel(screenWidth),
               _buildShareButton(),
             ],
           ),
           const SizedBox(height: 16),
 
           // --- Basic Info Section ---
-          _buildBasicInfo(context),
+          _buildBasicInfo(context, screenWidth),
           const SizedBox(height: 16),
 
           // --- Tabs Section ---
@@ -42,7 +50,6 @@ class ListingDetailPage extends StatelessWidget {
             length: 2,
             child: Column(
               children: [
-                // Tab Bar
                 TabBar(
                   isScrollable: true,
                   dividerColor: AppColors.secondary,
@@ -54,10 +61,8 @@ class ListingDetailPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // Tab Views
                 SizedBox(
-                  height: 300,
+                  height: isTabletOrWeb ? 500 : 300,
                   child: TabBarView(
                     children: [
                       DetailsTab(listing: listing),
@@ -73,32 +78,36 @@ class ListingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildImageGallery(BuildContext context) {
+  Widget _buildImageGallery(BuildContext context, bool isTabletOrWeb) {
+    final height = isTabletOrWeb ? 400.0 : 250.0;
+
     return Stack(
       children: [
         SizedBox(
-          height: 250,
+          height: height,
           width: double.infinity,
           child: PageView.builder(
             itemCount: listing.images.length,
             onPageChanged: (index) {
-              // update via provider
               Provider.of<ListingProvider>(
                 context,
                 listen: false,
               ).updateImageIndex(index);
             },
+
             itemBuilder: (context, index) {
               final imageUrl = listing.images[index];
-              return Image.network(
-                imageUrl,
+              return CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
-                errorBuilder: (context, _, __) => Container(
+                placeholder: (context, url) =>
+                    Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => Container(
                   color: AppColors.tertiary,
                   child: Icon(
                     Icons.broken_image,
-                    size: 180,
+                    size: isTabletOrWeb ? 220 : 180,
                     color: Colors.grey,
                   ),
                 ),
@@ -107,7 +116,6 @@ class ListingDetailPage extends StatelessWidget {
           ),
         ),
 
-        // Positioned at bottom right
         Positioned(
           bottom: 8,
           right: 12,
@@ -146,12 +154,12 @@ class ListingDetailPage extends StatelessWidget {
     ),
   );
 
-  Widget _buildPropertyTypeLabel() => Positioned(
-    top: 8,
-    left: 80,
+  Widget _buildPropertyTypeLabel(double screenWidth) => Positioned(
+    top: 16,
+    left: screenWidth * 0.25, // responsive left
     child: Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(4),
         color: AppColors.secondary,
       ),
       child: Padding(
@@ -168,7 +176,7 @@ class ListingDetailPage extends StatelessWidget {
   );
 
   Widget _buildShareButton() => Positioned(
-    top: 8,
+    top: 16,
     right: 20,
     child: CircleAvatar(
       backgroundColor: AppColors.secondary,
@@ -179,41 +187,50 @@ class ListingDetailPage extends StatelessWidget {
     ),
   );
 
-  Widget _buildBasicInfo(BuildContext context) {
-    final format = NumberFormat('#,##,###'); // Indian style
-    final price = format.format(listing.listPrice);
+  Widget _buildBasicInfo(BuildContext context, double screenWidth) {
+    final isTabletOrWeb = screenWidth > 600;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isTabletOrWeb ? 40 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
+            padding: const EdgeInsets.only(left: 30, right: 15),
             child: Row(
               children: [
                 Text(
-                  '\$ $price',
+                  '\$ ${getcurrencyFormat(listing.listPrice)}',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: isTabletOrWeb ? 32 : 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.tertiary,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 13),
                 Text(
                   listing.propertyType,
-                  style: TextStyle(fontSize: 16, color: AppColors.darkGrey),
+                  style: TextStyle(
+                    fontSize: isTabletOrWeb ? 18 : 14,
+                    color: AppColors.darkGrey,
+                  ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Container(
                   decoration: BoxDecoration(
                     color: AppColors.lightBlue,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  padding: EdgeInsets.all(10),
-                  child: const Text(
+                  padding: EdgeInsets.symmetric(
+                    vertical: isTabletOrWeb ? 8 : 4,
+                    horizontal: isTabletOrWeb ? 30 : 20,
+                  ),
+                  child: Text(
                     " Coming Soon",
-                    style: TextStyle(fontSize: 12, color: AppColors.primary),
+                    style: TextStyle(
+                      fontSize: isTabletOrWeb ? 14 : 12,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -221,46 +238,24 @@ class ListingDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.only(left: 30),
-            child: Text(
-              listing.fullAddress,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppColors.darkGrey,
-                fontSize: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: SizedBox(
+              width: screenWidth / 2,
+              child: Text(
+                listing.fullAddress,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.darkGrey,
+                  fontSize: isTabletOrWeb ? 16 : 14,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.only(left: 30),
-            child: Row(
-              children: [
-                Icon(Icons.bed_outlined, size: 18, color: AppColors.primary),
-                const SizedBox(width: 4),
-                Text("${listing.beds}"),
-                const SizedBox(width: 16),
-                Icon(
-                  Icons.bathtub_outlined,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 4),
-                Text("${listing.baths}"),
-                const SizedBox(width: 16),
-                RotatedBox(
-                  quarterTurns: 1,
-                  child: Icon(
-                    Icons.straighten,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text("${listing.squareFeet} sqft"),
-              ],
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: PropertyDetails(listing: listing),
           ),
           const SizedBox(height: 16),
           Padding(
@@ -268,8 +263,8 @@ class ListingDetailPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _texttheme(Icons.public, "View on website"),
-                _texttheme(Icons.location_on, "View on map"),
+                _textTheme(Icons.public, "View on website", isTabletOrWeb),
+                _textTheme(Icons.location_on, "View on map", isTabletOrWeb),
               ],
             ),
           ),
@@ -279,11 +274,17 @@ class ListingDetailPage extends StatelessWidget {
     );
   }
 
-  Row _texttheme(IconData iconData, String text) => Row(
+  Row _textTheme(IconData iconData, String text, bool isTabletOrWeb) => Row(
     children: [
-      Icon(iconData, color: AppColors.primary),
+      Icon(iconData, color: AppColors.primary, size: isTabletOrWeb ? 20 : 18),
       const SizedBox(width: 4),
-      Text(text, style: TextStyle(color: AppColors.primary)),
+      Text(
+        text,
+        style: TextStyle(
+          color: AppColors.primary,
+          fontSize: isTabletOrWeb ? 14 : 12,
+        ),
+      ),
     ],
   );
 }

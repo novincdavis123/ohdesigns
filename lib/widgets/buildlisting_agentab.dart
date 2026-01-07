@@ -8,46 +8,65 @@ class BuildListingAgentTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletOrWeb = screenWidth > 600;
+
     final agentDetails = [
       {"label": "Name", "value": listing.agentName},
       {"label": "Office", "value": listing.agentOffice},
     ];
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTabletOrWeb ? 40 : 16,
+        vertical: 16,
+      ),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: agentDetails.length,
       itemBuilder: (context, index) {
         final item = agentDetails[index];
-        return _labelValueRowAligned(item["label"]!, item["value"]!);
+        return _labelValueRowAligned(
+          context,
+          item["label"]!,
+          item["value"]!,
+          isTabletOrWeb,
+        );
       },
-      separatorBuilder: (context, index) => const Divider(
-        color: AppColors.grey,
-        thickness: 0.5,
-        height: 16, // spacing between rows
+      separatorBuilder: (context, index) => SizedBox(
+        height: isTabletOrWeb ? 24 : 16,
+        child: const Divider(color: AppColors.grey, thickness: 0.5),
       ),
     );
   }
 
-  Widget _labelValueRowAligned(String label, String value) {
+  Widget _labelValueRowAligned(
+    BuildContext context,
+    String label,
+    String value,
+    bool isTabletOrWeb,
+  ) {
     return Padding(
-      padding: const EdgeInsets.only(left: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 70, // same width as DetailsTab for alignment
+            width: isTabletOrWeb ? 120 : 70, // wider on bigger screens
             child: Text(
               "$label:",
-              style: const TextStyle(fontSize: 14, color: AppColors.primary),
+              style: TextStyle(
+                fontSize: isTabletOrWeb ? 16 : 14,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: isTabletOrWeb ? 16 : 14,
                 fontWeight: FontWeight.bold,
                 color: AppColors.grey,
               ),

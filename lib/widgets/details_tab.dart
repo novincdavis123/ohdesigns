@@ -8,6 +8,9 @@ class DetailsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletOrWeb = screenWidth > 600;
+
     final details = [
       {"label": "MLS#", "value": listing.mlsNumber},
       {"label": "Property Type", "value": listing.propertyType},
@@ -15,41 +18,56 @@ class DetailsTab extends StatelessWidget {
     ];
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      padding: EdgeInsets.symmetric(
+        vertical: isTabletOrWeb ? 24 : 16,
+        horizontal: isTabletOrWeb ? 40 : 16,
+      ),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: details.length,
       itemBuilder: (context, index) {
         final item = details[index];
-        return _labelValueRowAligned(item["label"]!, item["value"]!);
+        return _labelValueRowAligned(
+          context,
+          item["label"]!,
+          item["value"]!,
+          isTabletOrWeb,
+        );
       },
-      separatorBuilder: (context, index) => const Divider(
-        color: AppColors.grey,
-        thickness: 0.5,
-        height: 16, // spacing between rows
+      separatorBuilder: (context, index) => SizedBox(
+        height: isTabletOrWeb ? 24 : 16,
+        child: const Divider(color: AppColors.grey, thickness: 0.5),
       ),
     );
   }
 
-  Widget _labelValueRowAligned(String label, String value) {
+  Widget _labelValueRowAligned(
+    BuildContext context,
+    String label,
+    String value,
+    bool isTabletOrWeb,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // fixed width for label column
           SizedBox(
-            width: 120, // adjust width as needed
+            width: isTabletOrWeb ? 150 : 120, // wider label for bigger screens
             child: Text(
               "$label:",
-              style: const TextStyle(fontSize: 14, color: AppColors.tertiary),
+              style: TextStyle(
+                fontSize: isTabletOrWeb ? 16 : 14,
+                color: AppColors.tertiary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: isTabletOrWeb ? 16 : 14,
                 fontWeight: FontWeight.bold,
                 color: AppColors.grey,
               ),
