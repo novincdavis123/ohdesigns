@@ -20,12 +20,12 @@ Getting Started
 1. Clone the repository
 
 
-git clone https://github.com/yourusername/flutter-listings-app.git
+git clone https://github.com/novincdavis123/ohdesigns.git
 
 2. Change into the project directory
 
 
-cd flutter-listings-app
+cd ohdesigns
 
 3. Get dependencies
 
@@ -107,7 +107,7 @@ Utilize CachedNetworkImage to
 
 Cache images locally.
 
-IndicatorView(QWidget parent=None):GenresEditor(parent); #qt
+IndicatorView for agent and properties
 
 Show a default icon for damaged images.
 
