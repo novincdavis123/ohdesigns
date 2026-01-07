@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/listing_model.dart';
 import '../theme/app_colors.dart';
 
@@ -28,7 +29,7 @@ class ListingCard extends StatelessWidget {
         : "https://via.placeholder.com/400"; // fallback
 
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Image.network(
         imageUrl,
         height: 150,
@@ -38,25 +39,25 @@ class ListingCard extends StatelessWidget {
           if (progress == null) return child;
           return const SizedBox(
             height: 180,
+            width: 180,
             child: Center(child: CircularProgressIndicator()),
           );
         },
         errorBuilder: (context, error, stack) {
-          return Container(
-            height: 180,
-            color: AppColors.tertiary,
-            child: const Center(child: Icon(Icons.image_not_supported)),
-          );
+          // Show a placeholder icon on error
+          return Icon(Icons.broken_image, size: 180, color: Colors.grey);
         },
       ),
     );
   }
 
   Widget _buildInfoSection(BuildContext context) {
+    final format = NumberFormat('#,##,###'); // Indian style
+    final price = format.format(listing.listPrice);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
-        width: 180,
+        width: 210,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -64,7 +65,7 @@ class ListingCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "\$${listing.listPrice.toString()}",
+                  '\$ $price',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.tertiary,
                     fontWeight: FontWeight.bold,
@@ -73,17 +74,17 @@ class ListingCard extends StatelessWidget {
                 Container(
                   margin: const EdgeInsets.only(left: 8),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
+                    horizontal: 20,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: listing.status == IdcStatus.active
+                    color: listing.status == "Active"
                         ? Colors.green
                         : Colors.red,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    listing.status == IdcStatus.active ? "Active" : "Sold",
+                    listing.status == "Active" ? "Active" : "Sold",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -95,23 +96,38 @@ class ListingCard extends StatelessWidget {
             ),
             Text(
               listing.fullAddress,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(color: AppColors.primary),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppColors.darkGrey,
+                fontSize: 14,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.bed, size: 18, color: AppColors.tertiary),
+                Icon(Icons.bed_outlined, size: 18, color: AppColors.primary),
                 const SizedBox(width: 4),
                 Text("${listing.beds}"),
                 const SizedBox(width: 16),
-                Icon(Icons.bathroom, size: 18, color: AppColors.tertiary),
+                Icon(
+                  Icons.bathtub_outlined,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: 4),
                 Text("${listing.baths}"),
+                const SizedBox(width: 16),
+                RotatedBox(
+                  quarterTurns: 1,
+                  child: Icon(
+                    Icons.straighten,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text("${listing.squareFeet} sqft"),
               ],
             ),
           ],

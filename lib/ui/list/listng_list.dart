@@ -33,7 +33,10 @@ class ListingPage extends StatelessWidget {
       builder: (context, provider, child) {
         // Still loading
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return SizedBox(
+            width: 200,
+            child: const Center(child: CircularProgressIndicator()),
+          );
         }
 
         // No data after loading

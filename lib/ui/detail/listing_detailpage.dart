@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ohdesigns/models/listing_model.dart';
 import 'package:ohdesigns/providers/listing_provider.dart';
 import 'package:ohdesigns/theme/app_colors.dart';
+import 'package:ohdesigns/widgets/buildlisting_agentab.dart';
+import 'package:ohdesigns/widgets/details_tab.dart';
 import 'package:provider/provider.dart';
 
 class ListingDetailPage extends StatelessWidget {
@@ -10,19 +13,7 @@ class ListingDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _appBar(), body: _body(context));
-  }
-
-  // AppBar with back button and title
-  AppBar _appBar() {
-    return AppBar(
-      backgroundColor: AppColors.primary,
-      iconTheme: IconThemeData(color: AppColors.secondary),
-      title: Text(
-        listing.fullAddress,
-        style: TextStyle(color: AppColors.secondary),
-      ),
-    );
+    return SafeArea(child: Scaffold(body: _body(context)));
   }
 
   // Body with image gallery and details
@@ -31,17 +22,58 @@ class ListingDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildImageGallery(context, listing),
+          // --- Image Gallery ---
+          Stack(
+            children: [
+              _buildImageGallery(context),
+              _buildBackButton(context),
+              _buildPropertyTypeLabel(),
+              _buildShareButton(),
+            ],
+          ),
           const SizedBox(height: 16),
-          _buildBasicInfo(),
+
+          // --- Basic Info Section ---
+          _buildBasicInfo(context),
           const SizedBox(height: 16),
-          _buildDetailsSection(),
+
+          // --- Tabs Section ---
+          DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                // Tab Bar
+                TabBar(
+                  isScrollable: true,
+                  dividerColor: AppColors.secondary,
+                  unselectedLabelColor: AppColors.grey,
+                  indicatorColor: AppColors.primary,
+                  tabs: const [
+                    Tab(text: 'Details'),
+                    Tab(text: 'Listing Agent'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Tab Views
+                SizedBox(
+                  height: 300,
+                  child: TabBarView(
+                    children: [
+                      DetailsTab(listing: listing),
+                      BuildListingAgentTab(listing: listing),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildImageGallery(BuildContext context, Listing listing) {
+  Widget _buildImageGallery(BuildContext context) {
     return Stack(
       children: [
         SizedBox(
@@ -64,7 +96,11 @@ class ListingDetailPage extends StatelessWidget {
                 width: double.infinity,
                 errorBuilder: (context, _, __) => Container(
                   color: AppColors.tertiary,
-                  child: const Icon(Icons.image_not_supported),
+                  child: Icon(
+                    Icons.broken_image,
+                    size: 180,
+                    color: Colors.grey,
+                  ),
                 ),
               );
             },
@@ -99,46 +135,155 @@ class ListingDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBasicInfo() {
+  Widget _buildBackButton(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(8),
+    child: CircleAvatar(
+      backgroundColor: AppColors.secondary,
+      child: IconButton(
+        icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+    ),
+  );
+
+  Widget _buildPropertyTypeLabel() => Positioned(
+    top: 8,
+    left: 80,
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: AppColors.secondary,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 6),
+        child: Text(
+          'MLS# ${listing.mlsNumber}',
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _buildShareButton() => Positioned(
+    top: 8,
+    right: 20,
+    child: CircleAvatar(
+      backgroundColor: AppColors.secondary,
+      child: IconButton(
+        icon: const Icon(Icons.share, color: AppColors.primary),
+        onPressed: () {},
+      ),
+    ),
+  );
+
+  Widget _buildBasicInfo(BuildContext context) {
+    final format = NumberFormat('#,##,###'); // Indian style
+    final price = format.format(listing.listPrice);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "\$${listing.listPrice}",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              children: [
+                Text(
+                  '\$ $price',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.tertiary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  listing.propertyType,
+                  style: TextStyle(fontSize: 16, color: AppColors.darkGrey),
+                ),
+                Spacer(),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.lightBlue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.all(10),
+                  child: const Text(
+                    " Coming Soon",
+                    style: TextStyle(fontSize: 12, color: AppColors.primary),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
+            child: Text(
+              listing.fullAddress,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppColors.darkGrey,
+                fontSize: 14,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
+            child: Row(
+              children: [
+                Icon(Icons.bed_outlined, size: 18, color: AppColors.primary),
+                const SizedBox(width: 4),
+                Text("${listing.beds}"),
+                const SizedBox(width: 16),
+                Icon(
+                  Icons.bathtub_outlined,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 4),
+                Text("${listing.baths}"),
+                const SizedBox(width: 16),
+                RotatedBox(
+                  quarterTurns: 1,
+                  child: Icon(
+                    Icons.straighten,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text("${listing.squareFeet} sqft"),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _texttheme(Icons.public, "View on website"),
+                _texttheme(Icons.location_on, "View on map"),
+              ],
+            ),
+          ),
+          Divider(color: AppColors.darkGrey, height: 40, thickness: .5),
         ],
       ),
     );
   }
 
-  Widget _buildDetailsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Details",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            listing.remarks.isNotEmpty
-                ? listing.remarks
-                : "No description available",
-            style: TextStyle(color: AppColors.secondary),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
+  Row _texttheme(IconData iconData, String text) => Row(
+    children: [
+      Icon(iconData, color: AppColors.primary),
+      const SizedBox(width: 4),
+      Text(text, style: TextStyle(color: AppColors.primary)),
+    ],
+  );
 }

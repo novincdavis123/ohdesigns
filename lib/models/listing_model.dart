@@ -46,11 +46,11 @@ class Listing {
   final int squareFeet;
   final int beds;
   final String remarks;
-  final IdcStatus status;
+  final String status;
   final int listPrice;
   final bool displayAddress;
   final int photoCount;
-  final IdcPropertyType propertyType;
+  final String propertyType;
   final int baths;
   final String fullAddress;
 
@@ -84,11 +84,11 @@ class Listing {
       squareFeet: json['SQFT'],
       beds: json['BEDS'],
       remarks: json['IDCREMARKS'],
-      status: idcStatusValues.map[json['IDCSTATUS']]!,
+      status: json['IDCSTATUS'],
       listPrice: json['IDCLISTPRICE'],
       displayAddress: json['IDCDISPLAYADDRESS'],
       photoCount: json['MLSPHOTOCOUNT'],
-      propertyType: idcPropertyTypeValues.map[json['IDCPROPERTYTYPE']]!,
+      propertyType: json['IDCPROPERTYTYPE'],
       baths: json['BATHSTOTAL'],
       fullAddress: json['IDCFULLADDRESS'],
     );
@@ -105,11 +105,11 @@ class Listing {
       'SQFT': squareFeet,
       'BEDS': beds,
       'IDCREMARKS': remarks,
-      'IDCSTATUS': idcStatusValues.reverse[status],
+      'IDCSTATUS': status,
       'IDCLISTPRICE': listPrice,
       'IDCDISPLAYADDRESS': displayAddress,
       'MLSPHOTOCOUNT': photoCount,
-      'IDCPROPERTYTYPE': idcPropertyTypeValues.reverse[propertyType],
+      'IDCPROPERTYTYPE': propertyType,
       'BATHSTOTAL': baths,
       'IDCFULLADDRESS': fullAddress,
     };
@@ -120,33 +120,25 @@ class Listing {
 /// Enums
 /// --------------------
 
-enum IdcPropertyType {
-  commercialSale,
-  condoTownhouse,
-  land,
-  multiFamily,
-  singleFamily,
-}
-
-enum IdcStatus { active, activeUnderContract, pending }
+// enum IdcPropertyType {
+//   commercialSale,
+//   condoTownhouse,
+//   land,
+//   multiFamily,
+//   singleFamily,
+// }
 
 /// --------------------
 /// Enum Helpers
 /// --------------------
 
-final idcPropertyTypeValues = EnumValues({
-  'Commercial Sale': IdcPropertyType.commercialSale,
-  'Condo/Townhouse': IdcPropertyType.condoTownhouse,
-  'Land': IdcPropertyType.land,
-  'Multi-Family': IdcPropertyType.multiFamily,
-  'Single Family': IdcPropertyType.singleFamily,
-});
-
-final idcStatusValues = EnumValues({
-  'Active': IdcStatus.active,
-  'Active Under Contract': IdcStatus.activeUnderContract,
-  'Pending': IdcStatus.pending,
-});
+// final idcPropertyTypeValues = EnumValues({
+//   'Commercial Sale': IdcPropertyType.commercialSale,
+//   'Condo/Townhouse': IdcPropertyType.condoTownhouse,
+//   'Land': IdcPropertyType.land,
+//   'Multi-Family': IdcPropertyType.multiFamily,
+//   'Single Family': IdcPropertyType.singleFamily,
+// });
 
 class EnumValues<T> {
   final Map<String, T> map;
